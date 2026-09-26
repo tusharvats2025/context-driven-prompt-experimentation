@@ -282,7 +282,7 @@ If you use this experiment in your research:
   author  = {Tushar},
   title   = {CDP: Context-Driven Prompting for ML Pipelines},
   year    = {2026},
-  url     = {https://github.com/<your-repo>}
+  url     = {https://github.com/tusharvats2025/context-driven-prompt-experimentation}
 }
 ```
 
