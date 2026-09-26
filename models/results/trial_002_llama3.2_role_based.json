@@ -1,0 +1,66 @@
+{
+  "trial_id": "trial_002_llama3.2_role_based",
+  "pattern_name": "role_based",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 39.70632767677307,
+  "score_pct": 14.29,
+  "passed_count": 1,
+  "failed_count": 6,
+  "passed_metrics": [
+    "vif_check"
+  ],
+  "failed_metrics": [
+    "no_dummy_trap",
+    "heteroscedasticity_handled",
+    "outliers_treated",
+    "scaler_no_leakage",
+    "residuals_checked",
+    "model_saves"
+  ],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "vif_check": {
+      "result": "PASS",
+      "confidence": 0.17,
+      "evidence": [
+        "# Check for multicollinearity"
+      ],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    }
+  }
+}

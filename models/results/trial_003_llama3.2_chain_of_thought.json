@@ -1,0 +1,70 @@
+{
+  "trial_id": "trial_003_llama3.2_chain_of_thought",
+  "pattern_name": "chain_of_thought",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 35.43481087684631,
+  "score_pct": 28.57,
+  "passed_count": 2,
+  "failed_count": 5,
+  "passed_metrics": [
+    "outliers_treated",
+    "model_saves"
+  ],
+  "failed_metrics": [
+    "no_dummy_trap",
+    "vif_check",
+    "heteroscedasticity_handled",
+    "scaler_no_leakage",
+    "residuals_checked"
+  ],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "vif_check": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "PASS",
+      "confidence": 0.22,
+      "evidence": [
+        "IQR = Q3 - Q1"
+      ],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "PASS",
+      "confidence": 0.62,
+      "evidence": [
+        "pickle.dump(model, f)",
+        "print(\"Model saved successfully.\")",
+        "save_model(model, 'D:\\\\Context_driven_prompt_experimentation\\\\models\\\\salary_model.pkl')"
+      ],
+      "violations": []
+    }
+  }
+}

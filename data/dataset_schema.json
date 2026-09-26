@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "rows": 500,
+  "target_column": "salary",
+  "columns": {
+    "age": {
+      "dtype": "float",
+      "description": "Employee age in years",
+      "issues": [
+        "outliers injected (3 extreme values: 85-95)"
+      ]
+    },
+    "years_exp": {
+      "dtype": "float",
+      "description": "Years of work experience",
+      "issues": [
+        "~8% missing (MAR)",
+        "highly correlated with experience_dup (VIF trigger)"
+      ]
+    },
+    "experience_dup": {
+      "dtype": "float",
+      "description": "Near-duplicate of years_exp (injected multicollinearity)",
+      "issues": [
+        "INJECTED: correlation > 0.97 with years_exp \u2014 triggers VIF check"
+      ]
+    },
+    "education": {
+      "dtype": "object",
+      "description": "Highest education level",
+      "cardinality": 4,
+      "issues": [
+        "requires OHE with drop='first' to avoid dummy trap"
+      ]
+    },
+    "city": {
+      "dtype": "object",
+      "description": "City of employment",
+      "cardinality": 5,
+      "issues": [
+        "requires OHE with drop='first' to avoid dummy trap"
+      ]
+    },
+    "bonus_amount": {
+      "dtype": "float",
+      "description": "Annual bonus (exponential distribution \u2014 skewed)",
+      "issues": [
+        "~5% missing (MCAR)",
+        "right-skewed \u2014 triggers log1p",
+        "outliers from exponential tail"
+      ]
+    },
+    "salary": {
+      "dtype": "float",
+      "description": "TARGET: Annual salary in INR",
+      "issues": [
+        "heteroscedastic noise (variance grows with years_exp)",
+        "5 extreme outliers injected"
+      ]
+    }
+  },
+  "injected_issues_map": {
+    "dummy_trap": [
+      "education",
+      "city"
+    ],
+    "multicollinearity": [
+      "years_exp",
+      "experience_dup"
+    ],
+    "heteroscedasticity": [
+      "salary (noise ~ years_exp)"
+    ],
+    "outliers": [
+      "salary (5 extreme)",
+      "age (3 extreme)"
+    ],
+    "missing_values": [
+      "years_exp (~8% MAR)",
+      "bonus_amount (~5% MCAR)"
+    ],
+    "skewed_feature": [
+      "bonus_amount (exponential)"
+    ]
+  },
+  "expected_metric_triggers": {
+    "no_dummy_trap": "education + city require OHE with drop='first'",
+    "vif_check": "experience_dup has VIF >> 5 with years_exp",
+    "heteroscedasticity_handled": "Breusch-Pagan should reject H0 (p < 0.05)",
+    "outliers_treated": "salary and age both have extreme outliers",
+    "scaler_no_leakage": "StandardScaler must be fit on train split only",
+    "residuals_checked": "Shapiro-Wilk or Durbin-Watson on residuals",
+    "model_saves": "model.pkl + scaler.pkl must be written"
+  }
+}

@@ -1,0 +1,14 @@
+Perform linear regression on {{DATA_CSV}} predicting {{TARGET_COLUMN}}.
+
+Think step by step:
+Step 1: Load data and check for missing values
+Step 2: Handle missing values appropriately
+Step 3: Encode categorical variables
+Step 4: Handle outliers
+Step 5: Split into train/test sets
+Step 6: Scale features
+Step 7: Train a LinearRegression model
+Step 8: Evaluate using R2, RMSE, and MAE
+Step 9: Save the model
+
+Write complete, runnable Python code following these steps exactly.

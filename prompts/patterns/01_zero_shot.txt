@@ -1,0 +1,3 @@
+Perform linear regression on the dataset at {{DATA_CSV}} to predict {{TARGET_COLUMN}}.
+
+Write complete, runnable Python code.

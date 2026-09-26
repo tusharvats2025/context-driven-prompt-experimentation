@@ -1,0 +1,17 @@
+Build a production-grade linear regression pipeline on {{DATA_CSV}} predicting {{TARGET_COLUMN}}.
+
+Requirements:
+- Load and validate data
+- Handle missing values (impute or drop)
+- Encode categorical features
+- Remove or cap outliers
+- Split train/test before any scaling
+- Use StandardScaler on features
+- Select important features
+- Train LinearRegression with cross-validation
+- Report R2, RMSE, and MAE
+- Check model assumptions
+- Save model and scaler as .pkl files
+
+Use sklearn, pandas, numpy, scipy, and statsmodels as needed.
+Write complete, runnable Python code.

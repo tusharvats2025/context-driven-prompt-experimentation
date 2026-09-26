@@ -1,0 +1,106 @@
+{
+  "total_trials": 18,
+  "patterns_tested": [
+    "cdp",
+    "chain_of_thought",
+    "few_shot",
+    "legacy_expert",
+    "role_based",
+    "zero_shot"
+  ],
+  "models_tested": [
+    "llama3.2"
+  ],
+  "pattern_stats": {
+    "cdp": {
+      "n_trials": 3,
+      "avg_score_pct": 90.47,
+      "std_score_pct": 8.25,
+      "avg_time_sec": 72.52,
+      "metric_pass_rates": {
+        "no_dummy_trap": 100.0,
+        "vif_check": 100.0,
+        "heteroscedasticity_handled": 100.0,
+        "outliers_treated": 100.0,
+        "scaler_no_leakage": 33.3,
+        "residuals_checked": 100.0,
+        "model_saves": 100.0
+      }
+    },
+    "chain_of_thought": {
+      "n_trials": 3,
+      "avg_score_pct": 33.33,
+      "std_score_pct": 8.25,
+      "avg_time_sec": 40.98,
+      "metric_pass_rates": {
+        "no_dummy_trap": 0.0,
+        "vif_check": 0.0,
+        "heteroscedasticity_handled": 0.0,
+        "outliers_treated": 100.0,
+        "scaler_no_leakage": 33.3,
+        "residuals_checked": 0.0,
+        "model_saves": 100.0
+      }
+    },
+    "few_shot": {
+      "n_trials": 3,
+      "avg_score_pct": 14.29,
+      "std_score_pct": 0.0,
+      "avg_time_sec": 20.78,
+      "metric_pass_rates": {
+        "no_dummy_trap": 0.0,
+        "vif_check": 0.0,
+        "heteroscedasticity_handled": 0.0,
+        "outliers_treated": 0.0,
+        "scaler_no_leakage": 100.0,
+        "residuals_checked": 0.0,
+        "model_saves": 0.0
+      }
+    },
+    "legacy_expert": {
+      "n_trials": 3,
+      "avg_score_pct": 38.1,
+      "std_score_pct": 8.25,
+      "avg_time_sec": 44.79,
+      "metric_pass_rates": {
+        "no_dummy_trap": 0.0,
+        "vif_check": 0.0,
+        "heteroscedasticity_handled": 0.0,
+        "outliers_treated": 66.7,
+        "scaler_no_leakage": 66.7,
+        "residuals_checked": 33.3,
+        "model_saves": 100.0
+      }
+    },
+    "role_based": {
+      "n_trials": 3,
+      "avg_score_pct": 14.29,
+      "std_score_pct": 0.0,
+      "avg_time_sec": 32.22,
+      "metric_pass_rates": {
+        "no_dummy_trap": 0.0,
+        "vif_check": 33.3,
+        "heteroscedasticity_handled": 0.0,
+        "outliers_treated": 0.0,
+        "scaler_no_leakage": 66.7,
+        "residuals_checked": 0.0,
+        "model_saves": 0.0
+      }
+    },
+    "zero_shot": {
+      "n_trials": 3,
+      "avg_score_pct": 0.0,
+      "std_score_pct": 0.0,
+      "avg_time_sec": 28.43,
+      "metric_pass_rates": {
+        "no_dummy_trap": 0.0,
+        "vif_check": 0.0,
+        "heteroscedasticity_handled": 0.0,
+        "outliers_treated": 0.0,
+        "scaler_no_leakage": 0.0,
+        "residuals_checked": 0.0,
+        "model_saves": 0.0
+      }
+    }
+  }
+}

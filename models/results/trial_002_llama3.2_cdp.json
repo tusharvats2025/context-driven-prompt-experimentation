@@ -1,0 +1,85 @@
+{
+  "trial_id": "trial_002_llama3.2_cdp",
+  "pattern_name": "cdp",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 71.85531616210938,
+  "score_pct": 100.0,
+  "passed_count": 7,
+  "failed_count": 0,
+  "passed_metrics": [
+    "no_dummy_trap",
+    "vif_check",
+    "heteroscedasticity_handled",
+    "outliers_treated",
+    "scaler_no_leakage",
+    "residuals_checked",
+    "model_saves"
+  ],
+  "failed_metrics": [],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "PASS",
+      "confidence": 0.2,
+      "evidence": [
+        "df = OneHotEncode(col, drop='first')"
+      ],
+      "violations": []
+    },
+    "vif_check": {
+      "result": "PASS",
+      "confidence": 0.67,
+      "evidence": [
+        "vif_scores = calc_VIF(df.features)",
+        "# Multicollinearity check"
+      ],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "bp_stat, bp_p = Breusch_Pagan_test(residuals, X_test)",
+        "print(\"WARN: Heteroscedasticity detected\")"
+      ],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "PASS",
+      "confidence": 0.67,
+      "evidence": [
+        "Winsorize(col, [1, 99])",
+        "q1 = np.percentile(df[col], 25)",
+        "outliers = IQR_method(col)"
+      ],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "PASS",
+      "confidence": 0.8,
+      "evidence": [
+        "X_train = scaler.fit_transform(X_train)",
+        "X_test = scaler.transform(X_test)"
+      ],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "PASS",
+      "confidence": 0.8,
+      "evidence": [
+        "sw_stat, sw_p = Shapiro_Wilk(residuals)",
+        "dw = Durbin_Watson(residuals)",
+        "residuals = y_pred - df[target_column]"
+      ],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "save(scaler, model_output_path + \"/scaler.pkl\")",
+        "save(model, model_output_path + \"/model.pkl\")"
+      ],
+      "violations": []
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "trial_id": "trial_002_llama3.2_zero_shot",
+  "pattern_name": "zero_shot",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 38.46051621437073,
+  "score_pct": 0.0,
+  "passed_count": 0,
+  "failed_count": 7,
+  "passed_metrics": [],
+  "failed_metrics": [
+    "no_dummy_trap",
+    "vif_check",
+    "heteroscedasticity_handled",
+    "outliers_treated",
+    "scaler_no_leakage",
+    "residuals_checked",
+    "model_saves"
+  ],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "vif_check": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    }
+  }
+}

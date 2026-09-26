@@ -1,0 +1,73 @@
+{
+  "trial_id": "trial_002_llama3.2_legacy_expert",
+  "pattern_name": "legacy_expert",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 34.0502564907074,
+  "score_pct": 28.57,
+  "passed_count": 2,
+  "failed_count": 5,
+  "passed_metrics": [
+    "outliers_treated",
+    "model_saves"
+  ],
+  "failed_metrics": [
+    "no_dummy_trap",
+    "vif_check",
+    "heteroscedasticity_handled",
+    "scaler_no_leakage",
+    "residuals_checked"
+  ],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": [
+        "from sklearn.preprocessing import StandardScaler, OneHotEncoder",
+        "transformers=[('num', StandardScaler(), numerical_cols), ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols)],"
+      ]
+    },
+    "vif_check": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "PASS",
+      "confidence": 0.22,
+      "evidence": [
+        "# Use IQR method to detect and remove outliers"
+      ],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "pickle.dump(pipeline, f)",
+        "# Save model and scaler as .pkl files",
+        "with open('standard_scaler.pkl', 'wb') as f:"
+      ],
+      "violations": []
+    }
+  }
+}

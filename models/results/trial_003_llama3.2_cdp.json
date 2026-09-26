@@ -1,0 +1,85 @@
+{
+  "trial_id": "trial_003_llama3.2_cdp",
+  "pattern_name": "cdp",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 72.84634852409363,
+  "score_pct": 85.71,
+  "passed_count": 6,
+  "failed_count": 1,
+  "passed_metrics": [
+    "no_dummy_trap",
+    "vif_check",
+    "heteroscedasticity_handled",
+    "outliers_treated",
+    "residuals_checked",
+    "model_saves"
+  ],
+  "failed_metrics": [
+    "scaler_no_leakage"
+  ],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "PASS",
+      "confidence": 0.2,
+      "evidence": [
+        "def one_hot_encode(col, drop='first'):"
+      ],
+      "violations": []
+    },
+    "vif_check": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "VIF_THRESHOLD = 5.0",
+        "def calc_VIF(df):"
+      ],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "from scipy.stats import breusch_pagan_test",
+        "print(\"Heteroscedasticity detected.\")",
+        "bp_stat, bp_p = breusch_pagan_test(y_test - model.predict(X_train), X_train)"
+      ],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "PASS",
+      "confidence": 0.89,
+      "evidence": [
+        "OUTLIER_WINSOR_PERCENTILE = [1, 99]",
+        "return np.clip(col, lower_bound, upper_bound)",
+        "def IQR_method(col):"
+      ],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "PASS",
+      "confidence": 0.8,
+      "evidence": [
+        "from scipy.stats import shapiro_wilk",
+        "from scipy.stats import durbin_watson",
+        "RESIDUAL_NORMALITY_ALPHA = 0.05"
+      ],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "pickle.dump(model, f)",
+        "'model_path': os.path.join('output', 'model.pkl'),",
+        "'scaler_path': os.path.join('output', 'scaler.pkl'),"
+      ],
+      "violations": []
+    }
+  }
+}

@@ -1,0 +1,307 @@
+// linear_regression.cdp
+// Context Driven Prompting — Pipeline Schema
+// Domain     : Data Analytics / Supervised Learning
+// Model class: Linear Regression
+// Version    : 1.0
+
+[pipeline]
+  name         = linear_regression_pipeline
+  model_class  = linear
+  version      = 1.0
+  iterative    = true
+
+[config]
+  EMPTY_COL_THRESHOLD       = 0.95
+  DATASET_ABORT_THRESHOLD   = 0.60
+  HIGH_MISSING_FLAG         = 0.40
+  COERCE_NULL_TOLERANCE     = 0.10
+  OUTLIER_WINSOR_PERCENTILE = [1, 99]
+  OUTLIER_MEAN_SHIFT_MAX    = 0.15
+  OHE_CARDINALITY_LIMIT     = 15
+  CORRELATION_CUTOFF        = 0.90
+  VIF_THRESHOLD             = 5.0
+  VARIANCE_THRESHOLD        = 0.01
+  TRAIN_SPLIT_RATIO         = 0.80
+  RESIDUAL_NORMALITY_ALPHA  = 0.05
+
+[providers]
+  csv_parser        = fn(path: str) -> DataFrame
+  quality_report    = fn(df: DataFrame) -> dict
+  audit_log         = fn(step: str, decision: str) -> void
+  target_column     = str
+  model_output_path = str
+
+[guarantees]
+  no_null_values        = false
+  data_is_pre_split     = false
+  no_categorical_cols   = false
+  outliers_pre_treated  = false
+
+[steps]
+
+  [Step 1 | data_intake]
+    input
+      raw_file        : provided via csv_parser
+      target_column   : declared in [providers]
+    action
+      df = csv_parser(raw_file)
+      audit_log("intake", df.shape + df.dtypes)
+      if target_column not in df.columns:
+          HALT
+      if df.shape[0] < 30:
+          WARN
+      drop_cols where null_pct > EMPTY_COL_THRESHOLD
+      drop_rows where all values are null
+    backtrack
+      HALT   if file cannot be parsed by csv_parser
+      HALT   if target_column not found after load
+    output
+      DataFrame loaded · shape confirmed · target column present
+
+  [Step 2 | data_quality_profile]
+    input
+      df from Step 1
+    action
+      report = quality_report(df)
+      for col in df.columns:
+          if null_pct(col) > HIGH_MISSING_FLAG:
+              tag(col, "high_missing")
+          if unique_count(col) == 1:
+              tag(col, "constant_drop")
+      dup_count = df.duplicated().sum()
+      audit_log("quality", report + tags)
+      if total_null_pct(df) > DATASET_ABORT_THRESHOLD:
+          backtrack to Step 1
+    backtrack
+      → Step 1   if total_null_pct > DATASET_ABORT_THRESHOLD
+    output
+      quality report · null % per col · duplicate count
+
+  [Step 3 | type_cast_and_parse]
+    input
+      df from Step 1 · quality report from Step 2
+    action
+      for col in df.select(object_cols):
+          trial     = pd.to_numeric(col, errors='coerce')
+          new_nulls = trial.null_pct - col.null_pct
+          if new_nulls <= COERCE_NULL_TOLERANCE:
+              df[col] = trial
+          else:
+              tag(col, "cast_failed")
+              audit_log("cast_failed", col + new_nulls)
+      if target_column.dtype not in [int, float]:
+          HALT
+    backtrack
+      HALT       if target_column not numeric after casting
+      → Step 2   if coercion introduces nulls > COERCE_NULL_TOLERANCE
+    output
+      all parseable cols cast · target_column confirmed numeric
+
+  [Step 4 | missing_value_treatment]
+    input
+      df from Step 3 · quality report with high_missing tags
+    action
+      for col in df.null_cols:
+          corr = missingness_correlation(col, df)
+          if null_pct(col) < 0.05 and corr < 0.10:
+              if col.dtype == numeric:
+                  impute_median(col)
+              else:
+                  impute_mode(col)
+          elif corr >= 0.10:
+              df[col] = KNNImputer(n_neighbors=5).fit_transform(col)
+          elif tagged(col, "high_missing") or domain_flag:
+              df[col+"_was_missing"] = df[col].isnull().astype(int)
+              audit_log("MNAR_flag", col)
+      df = df.drop_duplicates()
+    backtrack
+      → Step 4 (retry)   if imputed values fall outside original range
+      → Step 3           if imputation reveals mixed types
+    output
+      zero nulls in all numeric cols · MNAR indicator cols added
+
+  [Step 5 | outlier_detection_and_treatment]
+    // MODEL_CLASS = linear → always treat outliers
+    input
+      df from Step 4 · zero nulls in numeric cols
+    action
+      for col in df.numeric_cols:
+          if is_skewed(col, threshold=1.0):
+              outliers = IQR_method(col)
+          else:
+              outliers = zscore_method(col, threshold=3)
+          if outliers.count > 0:
+              if is_valid_extreme(col):
+                  audit_log("outlier_kept", col + reason)
+              else:
+                  Winsorize(col, OUTLIER_WINSOR_PERCENTILE)
+                  mean_shift = abs(post_mean - pre_mean) / pre_mean
+                  if mean_shift > OUTLIER_MEAN_SHIFT_MAX:
+                      backtrack to Step 3
+    backtrack
+      → Step 3   if mean_shift > OUTLIER_MEAN_SHIFT_MAX
+    output
+      all numeric cols Winsorized · outlier decisions logged
+
+  [Step 6 | feature_engineering]
+    // LINEAR REGRESSION NOTE: drop='first' in OHE is mandatory here
+    // Leaving all dummies creates perfect multicollinearity
+    input
+      df from Step 5 · distributions stable
+    action
+      for col in df.categorical_cols:
+          if cardinality(col) <= OHE_CARDINALITY_LIMIT:
+              df = OneHotEncode(col, drop='first')
+          elif is_ordinal(col):
+              df = OrdinalEncode(col)
+          else:
+              df = TargetEncode(col)
+      for col in df.numeric_cols:
+          if skewness(col) > 1.0:
+              df[col] = log1p(col)
+      for col in df.datetime_cols:
+              df["month_sin"] = sin(2*pi * month / 12)
+              df["month_cos"] = cos(2*pi * month / 12)
+      verify: col_count before vs after · zero new nulls
+    backtrack
+      → Step 6 (retry)   if OHE creates > 50 cols from single feature
+      → Step 4           if post-engineering null check finds new nulls
+    output
+      all features numeric · dummy trap avoided · col count logged
+
+  [Step 7 | multicollinearity_check]
+    // Multicollinearity destroys coefficient interpretability
+    // A model can show R2=0.85 while all coefficients are meaningless
+    input
+      df from Step 6 · all features numeric
+    action
+      corr_matrix = df.corr()
+      for (col_a, col_b) in corr_pairs:
+          if abs(corr(col_a, col_b)) > CORRELATION_CUTOFF:
+              keep = whichever_has_higher_target_corr(col_a, col_b)
+              drop = the_other_one
+              audit_log("dropped_corr", drop + reason)
+      while True:
+          vif_scores = calc_VIF(df.features)
+          worst      = max(vif_scores)
+          if worst.vif > VIF_THRESHOLD:
+              drop(worst.col)
+              audit_log("dropped_VIF", worst.col + worst.vif)
+          else:
+              break
+    backtrack
+      → Step 6   if VIF loop removes > 50% of features
+      WARN       if < 3 features remain after VIF loop
+    output
+      all remaining features have VIF < VIF_THRESHOLD
+
+  [Step 8 | feature_scaling]
+    // CRITICAL: split BEFORE fitting scaler — fitting on full data is leakage
+    input
+      df from Step 7 · all features numeric
+    action
+      if guarantees.data_is_pre_split == false:
+          X_train, X_test, y_train, y_test = train_test_split(
+              df, target_column, test_size = 1 - TRAIN_SPLIT_RATIO)
+      scaler  = StandardScaler()
+      X_train = scaler.fit_transform(X_train)
+      X_test  = scaler.transform(X_test)
+      save(scaler, model_output_path + "/scaler.pkl")
+      for col in binary_cols + indicator_cols:
+          restore original values post-scaler
+    backtrack
+      HALT       if train/test split does not exist at this point
+      → Step 5   if scaler reveals extreme range missed by outlier step
+    output
+      scaled X_train · fitted scaler saved · X_test transformed not fitted
+
+  [Step 9 | feature_selection]
+    input
+      scaled X_train from Step 8 · train split only
+    action
+      for col in X_train.cols:
+          if variance(col) < VARIANCE_THRESHOLD:
+              drop(col)
+      lasso    = LassoCV(cv=5).fit(X_train, y_train)
+      selected = [col for col if lasso.coef[col] != 0]
+      if len(selected) < 3:
+          relax VARIANCE_THRESHOLD
+          retry filter stage
+      audit_log("selected_features", selected + lasso.alpha_)
+    backtrack
+      → Step 9 (retry)   if final feature count < 3
+      → Step 6           if high-coef feature appears to be leakage artifact
+    output
+      final feature list with Lasso coefficients logged
+
+  [Step 10 | model_training]
+    input
+      X_train · y_train · X_test · y_test from Step 9
+    action
+      model     = LinearRegression()
+      cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
+      audit_log("cv_r2", mean(cv_scores) + std(cv_scores))
+      model.fit(X_train, y_train)
+      y_pred    = model.predict(X_test)
+      residuals = y_test - y_pred
+      save(model, model_output_path + "/model.pkl")
+    backtrack
+      → Step 9   if cv_r2_mean < 0.3 and cv_r2_std > 0.15
+    output
+      fitted model saved · residuals computed · cross-val R2 logged
+
+  [Step 11 | assumption_validation]
+    // LINEAR REGRESSION SPECIFIC — validates four core assumptions
+    // A model can have R2=0.85 while silently violating all four
+    input
+      residuals from Step 10 · y_pred from Step 10
+    action
+      linearity_ok = residual_plot_is_random(y_pred, residuals)
+      if not linearity_ok:
+          audit_log("WARN_linearity")
+          backtrack to Step 6
+
+      bp_stat, bp_p = Breusch_Pagan_test(residuals, X_test)
+      if bp_p < 0.05:
+          audit_log("WARN_heteroscedasticity")
+          backtrack to Step 6
+
+      sw_stat, sw_p = Shapiro_Wilk(residuals)
+      if sw_p < RESIDUAL_NORMALITY_ALPHA:
+          audit_log("WARN_non_normal_residuals")
+
+      dw = Durbin_Watson(residuals)
+      if dw < 1.5 or dw > 2.5:
+          audit_log("WARN_autocorrelation")
+    backtrack
+      → Step 6   if linearity violation detected
+      → Step 6   if heteroscedasticity detected
+      WARN       if non-normal residuals (n > 200: CLT applies)
+    output
+      four assumption checks logged: PASS / WARN / FAIL per check
+
+  [Step 12 | evaluation_and_handoff]
+    input
+      y_test · y_pred · assumption_flags from Step 11
+    action
+      r2   = r2_score(y_test, y_pred)
+      rmse = sqrt(mean_squared_error(y_test, y_pred))
+      mae  = mean_absolute_error(y_test, y_pred)
+      if r2 < 0.0:
+          audit_log("WARN: model worse than baseline mean predictor")
+      output_summary = {
+          model_path       : model_output_path,
+          scaler_path      : model_output_path + "/scaler.pkl",
+          features_used    : selected_features,
+          metrics          : { r2, rmse, mae },
+          assumption_flags : audit_log.warnings,
+          pipeline_log     : full_audit_log
+      }
+    backtrack
+      → Step 9    if test R2 < 0.3
+      → Step 11   if assumption_flags unresolved
+    output
+      R2 · RMSE · MAE on test set
+      model + scaler saved to model_output_path
+      full pipeline audit log
+      assumption flags included in output summary

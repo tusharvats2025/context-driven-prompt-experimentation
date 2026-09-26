@@ -1,0 +1,84 @@
+{
+  "trial_id": "trial_001_llama3.2_cdp",
+  "pattern_name": "cdp",
+  "model_name": "llama3.2",
+  "elapsed_seconds": 72.84992051124573,
+  "score_pct": 85.71,
+  "passed_count": 6,
+  "failed_count": 1,
+  "passed_metrics": [
+    "no_dummy_trap",
+    "vif_check",
+    "heteroscedasticity_handled",
+    "outliers_treated",
+    "residuals_checked",
+    "model_saves"
+  ],
+  "failed_metrics": [
+    "scaler_no_leakage"
+  ],
+  "scores": {
+    "no_dummy_trap": {
+      "result": "PASS",
+      "confidence": 0.2,
+      "evidence": [
+        "df = OneHotEncode(col, drop='first')"
+      ],
+      "violations": []
+    },
+    "vif_check": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "vif_matrix = df.corrwith(df).abs()",
+        "# Multicollinearity Check Step"
+      ],
+      "violations": []
+    },
+    "heteroscedasticity_handled": {
+      "result": "PASS",
+      "confidence": 0.5,
+      "evidence": [
+        "bp_stat, bp_p = Breusch_Pagan_test(residuals, X_train)",
+        "print(\"Warning: Heteroscedasticity detected.\")"
+      ],
+      "violations": []
+    },
+    "outliers_treated": {
+      "result": "PASS",
+      "confidence": 0.78,
+      "evidence": [
+        "Winsorize(col, OUTLIER_WINSOR_PERCENTILE)",
+        "outliers = IQR_method(col)",
+        "outliers = zscore_method(col, threshold=3)"
+      ],
+      "violations": []
+    },
+    "scaler_no_leakage": {
+      "result": "FAIL",
+      "confidence": 0.0,
+      "evidence": [],
+      "violations": []
+    },
+    "residuals_checked": {
+      "result": "PASS",
+      "confidence": 0.8,
+      "evidence": [
+        "sw_stat, sw_p = Shapiro_Wilk(residuals)",
+        "dw = Durbin_Watson(residuals)",
+        "def assumption_validation(residuals, y_pred):"
+      ],
+      "violations": []
+    },
+    "model_saves": {
+      "result": "PASS",
+      "confidence": 0.62,
+      "evidence": [
+        "model.save(os.path.join(model_output_path, \"model.pkl\"))",
+        "os.makedirs(model_output_path, exist_ok=True)",
+        "scaler.save(os.path.join(model_output_path, \"scaler.pkl\"))"
+      ],
+      "violations": []
+    }
+  }
+}
